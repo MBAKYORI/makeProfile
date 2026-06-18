@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✨ My Profile Maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --pink: #FF8FAB;
+    --pink-light: #FFD6E4;
+    --pink-pale: #FFF0F5;
+    --purple: #C084FC;
+    --purple-light: #EDE9FE;
+    --mint: #6EE7B7;
+    --mint-light: #D1FAE5;
+    --yellow: #FDE68A;
+    --text: #3D2040;
+    --text-muted: #9B7BA0;
+    --white: #FFFFFF;
+    --radius: 20px;
+    --radius-lg: 28px;
+    --shadow: 0 4px 24px rgba(192,132,252,0.12);
+    --shadow-card: 0 8px 32px rgba(255,143,171,0.15);
+  }
+
+  body {
+    font-family: 'Nunito', 'M PLUS Rounded 1c', sans-serif;
+    background: linear-gradient(135deg, #FFF0F5 0%, #EDE9FE 50%, #F0FDF4 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+    color: var(--text);
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .header-emoji {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 8px;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--pink), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+  }
+  .header p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Main container */
+  .container {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    margin-bottom: 16px;
+  }
+  .progress-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .progress-bar {
+    height: 8px;
+    background: var(--pink-light);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--pink), var(--purple));
+    border-radius: 99px;
+    transition: width 0.4s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+
+  /* Chat card */
+  .chat-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .chat-area {
+    padding: 20px 16px;
+    min-height: 240px;
+    max-height: 360px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scroll-behavior: smooth;
+  }
+  .chat-area::-webkit-scrollbar { width: 4px; }
+  .chat-area::-webkit-scrollbar-track { background: transparent; }
+  .chat-area::-webkit-scrollbar-thumb { background: var(--pink-light); border-radius: 4px; }
+
+  /* Bubbles */
+  .bubble-wrap { display: flex; align-items: flex-end; gap: 8px; }
+  .bubble-wrap.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .avatar.bot { background: linear-gradient(135deg, var(--pink), var(--purple)); }
+  .avatar.user-av { background: linear-gradient(135deg, var(--mint), #38BDF8); }
+
+  .bubble {
+    max-width: 75%;
+    padding: 10px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .bubble.bot {
+    background: var(--pink-pale);
+    color: var(--text);
+    border-bottom-left-radius: 4px;
+    border: 1px solid var(--pink-light);
+  }
+  .bubble.user {
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    color: #fff;
+    border-bottom-right-radius: 4px;
+    font-weight: 600;
+  }
+
+  /* Typing indicator */
+  .typing { display: flex; gap: 4px; align-items: center; padding: 12px 16px; }
+  .typing span {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--pink-light);
+    display: inline-block;
+    animation: blink 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink { 0%,80%,100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+
+  /* Input area */
+  .input-area {
+    border-top: 1px solid var(--pink-light);
+    padding: 12px 16px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: #FDFAFF;
+  }
+  .input-area input {
+    flex: 1;
+    border: 1.5px solid var(--pink-light);
+    border-radius: 99px;
+    padding: 10px 16px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-area input:focus { border-color: var(--purple); }
+  .input-area input::placeholder { color: var(--text-muted); }
+  .send-btn {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 10px rgba(192,132,252,0.3);
+    flex-shrink: 0;
+  }
+  .send-btn:hover { transform: scale(1.08); box-shadow: 0 4px 16px rgba(192,132,252,0.4); }
+  .send-btn:active { transform: scale(0.96); }
+
+  /* Choice buttons */
+  .choices-area {
+    padding: 10px 16px 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: #FDFAFF;
+    border-top: 1px solid var(--pink-light);
+  }
+  .choice-btn {
+    padding: 7px 16px;
+    border-radius: 99px;
+    border: 1.5px solid var(--pink-light);
+    background: var(--white);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .choice-btn:hover { background: var(--pink-pale); border-color: var(--pink); color: var(--pink); transform: translateY(-1px); }
+  .choice-btn:active { transform: scale(0.97); }
+
+  /* Profile card */
+  .profile-section { display: none; margin-top: 8px; }
+  .profile-section.show { display: block; }
+
+  .profile-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    animation: slideUp 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .profile-header {
+    padding: 32px 24px 24px;
+    text-align: center;
+    background: linear-gradient(135deg, #FECDD3 0%, #E9D5FF 50%, #BBF7D0 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .profile-header::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+  }
+  .profile-header::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; left: -20px;
+    width: 80px; height: 80px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+  }
+  .profile-avatar-wrap {
+    position: relative; display: inline-block;
+    margin-bottom: 12px;
+  }
+  .profile-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    border: 4px solid #fff;
+    box-shadow: 0 4px 20px rgba(192,132,252,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 auto;
+  }
+  .profile-badge {
+    position: absolute;
+    bottom: 2px; right: -4px;
+    background: var(--yellow);
+    border-radius: 50%;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    border: 2px solid #fff;
+  }
+  .profile-name-display {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    position: relative; z-index: 1;
+  }
+  .profile-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-weight: 600;
+    position: relative; z-index: 1;
+  }
+
+  .profile-body { padding: 20px 20px 8px; }
+
+  .profile-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--pink-light);
+  }
+  .profile-row:last-child { border-bottom: none; }
+
+  .profile-icon {
+    width: 36px; height: 36px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .profile-info { flex: 1; }
+  .profile-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .profile-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* Icon bg colors */
+  .ic-pink { background: var(--pink-light); }
+  .ic-purple { background: var(--purple-light); }
+  .ic-mint { background: var(--mint-light); }
+  .ic-yellow { background: #FEF9C3; }
+
+  /* Footer decoration */
+  .profile-footer {
+    background: linear-gradient(90deg, var(--pink-light), var(--purple-light));
+    padding: 14px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--purple);
+  }
+
+  /* Action buttons */
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .btn {
+    flex: 1;
+    padding: 13px;
+    border-radius: var(--radius);
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(192,132,252,0.3);
+  }
+  .btn-secondary {
+    background: var(--white);
+    color: var(--purple);
+    border: 2px solid var(--purple-light);
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(192,132,252,0.35); }
+  .btn:active { transform: scale(0.98); }
+
+  /* Confetti dots */
+  .dots {
+    display: flex; justify-content: center; gap: 6px;
+    margin-top: 16px;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    animation: pop 0.5s ease forwards;
+    opacity: 0;
+  }
+  @keyframes pop { to { opacity: 1; transform: scale(1.2); } }
+
+  @media (max-width: 480px) {
+    body { padding: 16px 12px 36px; }
+    .header h1 { font-size: 22px; }
+    .header-emoji { font-size: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-emoji">🌸</span>
+  <h1>My Profile Maker</h1>
+  <p>質問に答えて、かわいいプロフィール帳を作ろう！</p>
+</div>
+
+<div class="container">
+  <div class="progress-wrap">
+    <div class="progress-label" id="progressLabel">スタート！</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="chat-card">
+    <div class="chat-area" id="chat"></div>
+    <div id="choicesArea" class="choices-area" style="display:none;"></div>
+    <div class="input-area" id="inputArea">
+      <input type="text" id="userInput" placeholder="ここに入力してね ✏️" />
+      <button class="send-btn" onclick="sendMsg()" aria-label="送信">➤</button>
+    </div>
+  </div>
+
+  <div class="profile-section" id="profileSection">
+    <div class="profile-card" id="profileCard">
+      <div class="profile-header">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar" id="profileAvatar">?</div>
+          <div class="profile-badge">✨</div>
+        </div>
+        <div class="profile-name-display" id="profileName">—</div>
+        <div class="profile-subtitle">My Profile ♡</div>
+      </div>
+      <div class="profile-body" id="profileBody"></div>
+      <div class="profile-footer">✦ made with My Profile Maker ✦</div>
+    </div>
+
+    <div class="dots" id="confettiDots"></div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" onclick="downloadImage()">📷 画像を保存</button>
+      <button class="btn btn-secondary" onclick="resetAll()">🔄 もう一度</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const questions = [
+  { key: "name",       label: "なまえ",         icon: "👤", iconBg: "ic-pink",   prompt: "こんにちは！🌸\nプロフィールを一緒に作りましょう！\n\nまず、あなたのお名前を教えてください！" },
+  { key: "birthday",   label: "たんじょうび",   icon: "🎂", iconBg: "ic-yellow", prompt: "すてきな名前ですね！💖\n誕生日はいつですか？\n（例：3月15日）" },
+  { key: "blood",      label: "血液型",         icon: "🩸", iconBg: "ic-pink",   prompt: "血液型を教えてください！", choices: ["A型", "B型", "O型", "AB型", "わからない"] },
+  { key: "birthplace", label: "出身地",         icon: "🗺️", iconBg: "ic-mint",   prompt: "出身地はどこですか？\n（例：東京都・大阪府）" },
+  { key: "job",        label: "しごと・学校",   icon: "💼", iconBg: "ic-purple", prompt: "職業や学校を教えてください！\n（例：会社員・大学生・高校生）" },
+  { key: "hobby",      label: "趣味",           icon: "🎨", iconBg: "ic-pink",   prompt: "好きな趣味はありますか？\n（例：読書・料理・ゲーム）" },
+  { key: "food",       label: "好きな食べ物",   icon: "🍜", iconBg: "ic-yellow", prompt: "好きな食べ物を教えてください！🍽️" },
+  { key: "color",      label: "好きな色",       icon: "🎀", iconBg: "ic-purple", prompt: "好きな色は何ですか？", choices: ["赤", "青", "緑", "黄色", "ピンク", "紫", "白", "黒", "オレンジ", "その他"] },
+  { key: "dream",      label: "夢・目標",       icon: "⭐", iconBg: "ic-yellow", prompt: "あなたの夢や目標を教えてください！✨" },
+  { key: "message",    label: "ひとことメッセージ", icon: "💬", iconBg: "ic-mint", prompt: "最後に、ひとことメッセージをどうぞ！🌟" },
+];
+
+const dotColors = ["#FF8FAB","#C084FC","#6EE7B7","#FDE68A","#93C5FD"];
+
+let step = 0;
+let answers = {};
+let isTyping = false;
+
+function scrollChat() {
+  const chat = document.getElementById('chat');
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addBubble(text, who, delay = 0) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const chat = document.getElementById('chat');
+      const wrap = document.createElement('div');
+      wrap.className = `bubble-wrap ${who === 'user' ? 'user' : ''}`;
+
+      const av = document.createElement('div');
+      av.className = `avatar ${who === 'bot' ? 'bot' : 'user-av'}`;
+      av.textContent = who === 'bot' ? '🌸' : '😊';
+
+      const bbl = document.createElement('div');
+      bbl.className = `bubble ${who}`;
+      bbl.textContent = text;
+
+      wrap.appendChild(av);
+      wrap.appendChild(bbl);
+      chat.appendChild(wrap);
+      scrollChat();
+      resolve();
+    }, delay);
+  });
+}
+
+function showTyping() {
+  const chat = document.getElementById('chat');
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble-wrap';
+  wrap.id = 'typing-indicator';
+
+  const av = document.createElement('div');
+  av.className = 'avatar bot';
+  av.textContent = '🌸';
+
+  const t = document.createElement('div');
+  t.className = 'bubble bot typing';
+  t.innerHTML = '<span></span><span></span><span></span>';
+
+  wrap.appendChild(av);
+  wrap.appendChild(t);
+  chat.appendChild(wrap);
+  scrollChat();
+}
+
+function removeTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+function updateProgress() {
+  const pct = Math.round((step / questions.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  if (step === 0) {
+    document.getElementById('progressLabel').textContent = 'スタート！';
+  } else if (step < questions.length) {
+    document.getElementById('progressLabel').textContent = `${step} / ${questions.length} 完了`;
+  } else {
+    document.getElementById('progressLabel').textContent = '完成！🎉';
+  }
+}
+
+function showChoices(opts) {
+  const area = document.getElementById('choicesArea');
+  const inputArea = document.getElementById('inputArea');
+  area.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'choice-btn';
+    b.textContent = o;
+    b.onclick = () => submitAnswer(o);
+    area.appendChild(b);
+  });
+  area.style.display = 'flex';
+  inputArea.style.display = 'none';
+}
+
+function hideChoices() {
+  document.getElementById('choicesArea').style.display = 'none';
+  document.getElementById('inputArea').style.display = 'flex';
+}
+
+async function ask(i) {
+  if (i >= questions.length) { buildProfile(); return; }
+  showTyping();
+  await new Promise(r => setTimeout(r, 700));
+  removeTyping();
+  await addBubble(questions[i].prompt, 'bot');
+  if (questions[i].choices) {
+    showChoices(questions[i].choices);
+  } else {
+    hideChoices();
+    document.getElementById('userInput').focus();
+  }
+  updateProgress();
+}
+
+async function submitAnswer(val) {
+  if (!val.trim() || isTyping) return;
+  isTyping = true;
+  hideChoices();
+  await addBubble(val, 'user');
+  answers[questions[step].key] = val;
+  step++;
+  isTyping = false;
+  await ask(step);
+}
+
+function sendMsg() {
+  if (step >= questions.length) return;
+  const input = document.getElementById('userInput');
+  const val = input.value.trim();
+  if (!val) return;
+  input.value = '';
+  submitAnswer(val);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('userInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendMsg();
+  });
+  ask(0);
+});
+
+function buildProfile() {
+  addBubble('プロフィールが完成しました！🎉✨\n下のカードを確認してね！', 'bot');
+  document.getElementById('inputArea').style.display = 'none';
+
+  const name = answers.name || '名無しさん';
+  document.getElementById('profileAvatar').textContent = name.charAt(0);
+  document.getElementById('profileName').textContent = name;
+
+  const body = document.getElementById('profileBody');
+  body.innerHTML = '';
+  questions.slice(1).forEach(q => {
+    const val = answers[q.key] || '—';
+    const row = document.createElement('div');
+    row.className = 'profile-row';
+    row.innerHTML = `
+      <div class="profile-icon ${q.iconBg}">${q.icon}</div>
+      <div class="profile-info">
+        <div class="profile-label">${q.label}</div>
+        <div class="profile-value">${val}</div>
+      </div>`;
+    body.appendChild(row);
+  });
+
+  const ps = document.getElementById('profileSection');
+  ps.classList.add('show');
+  ps.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const dots = document.getElementById('confettiDots');
+  dots.innerHTML = '';
+  dotColors.forEach((c, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    d.style.background = c;
+    d.style.animationDelay = (i * 0.08) + 's';
+    dots.appendChild(d);
+  });
+
+  updateProgress();
+}
+
+function downloadImage() {
+  const card = document.getElementById('profileCard');
+  html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'my_profile.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+function resetAll() {
+  step = 0;
+  answers = {};
+  document.getElementById('chat').innerHTML = '';
+  document.getElementById('profileSection').classList.remove('show');
+  document.getElementById('inputArea').style.display = 'flex';
+  document.getElementById('userInput').value = '';
+  updateProgress();
+  ask(0);
+}
+</script>
+</body>
+</html>
